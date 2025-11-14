@@ -1,11 +1,18 @@
-import './App.css';
+import React from "react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home/Home";
+import Signup from "./pages/Auth/Signup";
+import Login from "./pages/Auth/Login";
 
 function App() {
   return (
-    <div style={{ padding: 20 }}>
-      <h1>MovieMate Frontend</h1>
-      <p>Initial React setup is working</p>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home/>} />
+        <Route path="/signup" element={<Signup/>} />
+        <Route path="/login" element={<Login/>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
