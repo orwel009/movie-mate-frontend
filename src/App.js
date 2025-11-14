@@ -3,6 +3,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Signup from "./pages/Auth/Signup";
 import Login from "./pages/Auth/Login";
+import Add from "./pages/Add/Add";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Edit from "./pages/Edit/Edit";
+import MovieDetail from "./pages/MovieDetail/MovieDetail";
 
 function App() {
   return (
@@ -11,6 +15,9 @@ function App() {
         <Route path="/" element={<Home/>} />
         <Route path="/signup" element={<Signup/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/add" element={<ProtectedRoute><Add/></ProtectedRoute>} />
+        <Route path="/movie/:id" element={<ProtectedRoute><MovieDetail/></ProtectedRoute>} />
+        <Route path="/edit/:id" element={<ProtectedRoute><Edit/></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );
