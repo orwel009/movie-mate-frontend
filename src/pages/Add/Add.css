@@ -1,0 +1,87 @@
+/* Container/card */
+.add-page .add-card {
+  max-width: 900px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.04);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+}
+
+/* Head area */
+.add-card .h4 {
+  letter-spacing: -0.2px;
+}
+
+.add-card .card-body {
+  padding: 1.5rem;
+}
+
+/* Floating inputs: bigger labels on mobile for touch */
+.form-floating > label {
+  font-size: 0.9rem;
+}
+
+/* Poster / small niceties (if you later add poster preview) */
+.poster-placeholder {
+  min-height: 140px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f8fafc 100%);
+  border-radius: 8px;
+  border: 1px dashed rgba(15, 23, 42, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+}
+
+/* Buttons */
+.add-card .btn-primary {
+  min-width: 96px;
+}
+
+/* Responsive tweaks */
+@media (max-width: 767.98px) {
+  .add-card .card-body {
+    padding: 1rem;
+  }
+  .form-floating > label {
+    font-size: 0.95rem;
+  }
+}
+
+/* Subtle shadow */
+.add-card {
+  box-shadow: 0 10px 30px rgba(2,6,23,0.04);
+}
+
+/* Alert compact */
+.add-card .alert {
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+/* Small helper text style */
+.add-card .small {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Improve input focus appearance */
+.form-control:focus {
+  box-shadow: 0 0 0 0.15rem rgba(59,130,246,0.12);
+  border-color: #3b82f6;
+}
+
+/* Light borders for selects */
+.form-select {
+  border-radius: 8px;
+}
+
+/* Make the floating inputs taller on desktop */
+@media (min-width: 992px) {
+  .form-floating .form-control,
+  .form-floating .form-select {
+    height: 48px;
+    padding-top: 1.05rem;
+  }
+}
