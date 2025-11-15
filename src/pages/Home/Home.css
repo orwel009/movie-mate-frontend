@@ -1,0 +1,156 @@
+/* ---------- Branding MM logo ---------- */
+.home-brand-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  background: linear-gradient(90deg, #0f62fe, #3b82f6);
+  box-shadow: 0 6px 18px rgba(15, 98, 254, 0.15);
+}
+
+/* ---------- Page container ---------- */
+.home-container {
+  max-width: 1250px;
+}
+
+/* ---------- Header ---------- */
+.page-title {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  font-size: 1.5rem;
+}
+
+/* ---------- Empty state ---------- */
+.home-empty {
+  min-height: 70vh;
+  text-align: center;
+}
+
+/* ---------- Catalog grid & cards ---------- */
+.catalog-card {
+  border: 0;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 6px 20px rgba(12, 20, 40, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.catalog-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(12, 20, 40, 0.12);
+}
+
+/* Make the MovieCard area appear clickable but don't interfere with action buttons */
+.catalog-card-body {
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+/* Remove inner card shadows if MovieCard uses .app-card */
+.catalog-card-body .app-card {
+  margin: 0;
+  box-shadow: none;
+}
+
+/* Actions area */
+.catalog-card-actions {
+  padding: 6px;
+}
+
+/* Added badge style */
+.btn-success[disabled] {
+  opacity: 0.95;
+}
+
+/* ---------- Responsive tweaks ---------- */
+@media (max-width: 767px) {
+  .catalog-card {
+    padding: 12px;
+  }
+  .home-brand-logo {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+  .page-title {
+    font-size: 1.15rem;
+  }
+}
+
+/* Accessibility focus styles */
+.catalog-card-body:focus {
+  box-shadow: 0 0 0 4px rgba(15,98,254,0.08);
+  border-radius: 10px;
+}
+
+/* Small helper spacing for FilterBar container if needed */
+.filter-bar-wrapper {
+  margin-bottom: 12px;
+}
+
+/* No-results helper */
+.no-results {
+  padding: 2rem;
+  text-align: center;
+  color: #6c757d;
+  background: #fff;
+  border-radius: 10px;
+}
+
+/* Buttons focus */
+.btn:focus {
+  outline: 3px solid rgba(15,98,254,0.12);
+  outline-offset: 2px;
+}
+
+/* ---------- Header collapse panel styles (small screens) ---------- */
+#homeHeaderActions {
+  width: 100%;
+  margin-top: 8px;
+}
+
+#homeHeaderActions .header-actions {
+  padding: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Make collapsed panel visually distinct on small screens */
+@media (max-width: 767.98px) {
+  #homeHeaderActions.collapse:not(.show) {
+    display: none;
+  }
+  #homeHeaderActions.collapse.show {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(12,20,40,0.06);
+    padding: 8px;
+  }
+
+  /* Make buttons full-width-ish for finger targets */
+  #homeHeaderActions .header-actions .btn {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  #homeHeaderActions .header-actions .dropdown {
+    flex: 1 1 100%;
+  }
+}
+
+/* On md+ show actions inline */
+@media (min-width: 768px) {
+  #homeHeaderActions {
+    margin-top: 0;
+  }
+  #homeHeaderActions .header-actions .btn {
+    flex: 0 0 auto;
+  }
+}

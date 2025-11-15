@@ -1,0 +1,52 @@
+/* Wrapper */
+.filterbar-wrapper {
+  width: 100%;
+}
+
+/* Filter bar container: spacing and small-item appearance */
+.filter-bar {
+  gap: 10px;
+  margin-top: 8px;
+  align-items: end;
+}
+
+/* Individual filter item (labels above select on small screens) */
+.fb-item {
+  min-width: 160px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make inputs a bit tighter */
+.filter-bar .form-control-sm,
+.filter-bar .form-select-sm {
+  font-size: 0.9rem;
+  padding: .375rem .5rem;
+}
+
+/* Ensure search sits nicely on small screens */
+@media (max-width: 767.98px) {
+  .filter-bar {
+    gap: 8px;
+    padding: 8px;
+  }
+  .fb-item {
+    min-width: 120px;
+    flex: 1 1 45%;
+  }
+}
+
+/* On very small screens, make filter items stack full width inside collapse */
+@media (max-width: 420px) {
+  .fb-item {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+}
+
+/* Small visual polish */
+.filterbar-wrapper .form-control:focus,
+.filterbar-wrapper .form-select:focus {
+  box-shadow: 0 0 0 3px rgba(15,98,254,0.07);
+  border-color: #0f62fe;
+}

@@ -1,7 +1,7 @@
-// src/pages/MovieDetail/MovieDetail.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../../api';
+import './MovieDetail.css'; // keep your external CSS
 
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
@@ -21,13 +21,11 @@ const MovieDetail = ({ routeSource = null }) => {
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [source, setSource] = useState(null); // 'movie' or 'admin'
-
-  // set of keys representing admin items the user has already added
   const [addedKeys, setAddedKeys] = useState(new Set());
 
   const tokenPresent = () => !!localStorage.getItem('access_token');
 
-  // --- Key helpers (same strategy as Home) ---
+  // --- Key helpers ---
   const makeKeyFromAdminItem = (item) => {
     if (!item) return '';
     if (item?.admin_id) return `admin:${item.admin_id}`;
@@ -94,7 +92,7 @@ const MovieDetail = ({ routeSource = null }) => {
     setReview(data.review ?? '');
   };
 
-  // --- fetch logic: routeSource controls behavior; otherwise try movies then admin ---
+  // --- fetch logic ---
   useEffect(() => {
     let canceled = false;
 
@@ -117,7 +115,6 @@ const MovieDetail = ({ routeSource = null }) => {
           return;
         }
 
-        // auto mode: try /movies/:id/ first if logged in
         if (tokenPresent()) {
           try {
             const res = await api.get(`movies/${id}/`);
@@ -131,7 +128,6 @@ const MovieDetail = ({ routeSource = null }) => {
               delete api.defaults.headers.common['Authorization'];
             }
             if (!(status === 401 || status === 403 || status === 404)) throw err;
-            // else fallthrough to admin
           }
         }
 
@@ -273,14 +269,12 @@ const MovieDetail = ({ routeSource = null }) => {
       return;
     }
 
-    // If already added, navigate to my-shows
     if (isAdminItemAdded()) {
       navigate('/my-shows');
       return;
     }
 
     const adminKey = makeKeyFromAdminItem(movie);
-    // optimistic: mark as added (so UI shows badge immediately)
     setAddedKeys(prev => new Set([...Array.from(prev), adminKey]));
 
     setUpdating(true);
@@ -288,10 +282,8 @@ const MovieDetail = ({ routeSource = null }) => {
     try {
       const res = await api.post(`movies/from-admin/${movie.id}/`);
       const created = res.data;
-      // refresh user's movies set so match becomes authoritative
       await fetchUserMovies();
 
-      // if backend returns created user-movie id, navigate to that detail
       if (created && created.id) {
         navigate(`/movie/${created.id}`);
       } else {
@@ -299,7 +291,6 @@ const MovieDetail = ({ routeSource = null }) => {
       }
     } catch (err) {
       console.error(err);
-      // revert optimistic state
       setAddedKeys(prev => {
         const copy = new Set(prev);
         copy.delete(adminKey);
@@ -347,11 +338,10 @@ const MovieDetail = ({ routeSource = null }) => {
     }
   };
 
-
   // render guards
-  if (loading) return <div style={{ padding: 16 }}>Loading...</div>;
-  if (error && !movie) return <div style={{ padding: 16, color: 'red' }}>Error: {JSON.stringify(error)}</div>;
-  if (!movie) return <div style={{ padding: 16 }}>Not found.</div>;
+  if (loading) return <div className="py-5 text-center">Loading...</div>;
+  if (error && !movie) return <div className="py-4 text-center text-danger">Error: {JSON.stringify(error)}</div>;
+  if (!movie) return <div className="py-4 text-center">Not found.</div>;
 
   // UI derived
   const isTV = movie.media_type === 'tv';
@@ -361,185 +351,265 @@ const MovieDetail = ({ routeSource = null }) => {
   const percent = total > 0 ? Math.round((watched / total) * 100) : 0;
 
   const adminAdded = isAdminItemAdded();
-
   const initials = (movie.title || 'MV').split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 
+  // Header actions helpers
+  const isLoggedIn = () => !!localStorage.getItem('access_token');
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    delete api.defaults.headers.common['Authorization'];
+    navigate('/login');
+  };
+  const goToAdd = () => {
+    if (!isLoggedIn()) { navigate('/login'); return; }
+    navigate('/add');
+  };
+
   return (
-    <div style={{ maxWidth: 900, margin: '20px auto', padding: 16 }}>
-      <div style={{ display: 'flex', gap: 16 }}>
-        <div style={{ width: 160 }}>
-          <div style={{
-            width: 160, height: 240, borderRadius: 8, background: '#f3f4f6',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, fontWeight: 700
-          }}>
-            {initials}
+    <div className="container movie-detail my-4">
+      {/* ---------- Header (copied / adapted from AddedMovies) ---------- */}
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
+        <div className="d-flex align-items-center gap-3 mb-3 mb-md-0">
+          <div className="home-brand-logo" title="MovieMate">MM</div>
+          <div>
+            <h1 className="page-title mb-0">Movie Details</h1>
+            <small className="text-muted">Details, progress & reviews</small>
           </div>
         </div>
 
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <h2 style={{ margin: 0 }}>{movie.title}</h2>
-              <div style={{ color: '#666', marginTop: 6 }}>{movie.platform || '—'} • {movie.genre || '—'}</div>
-            </div>
+        <div className="d-flex align-items-center">
+          <button
+            className="btn btn-outline-secondary d-md-none me-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#movieHeaderActions"
+            aria-controls="movieHeaderActions"
+            aria-expanded="false"
+            aria-label="Toggle header actions"
+          >
+            Menu
+          </button>
 
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ fontSize: 12, color: '#666' }}>{source === 'movie' ? 'Owned' : 'Catalog'}</div>
-              <div style={{ fontSize: 13 }}>{new Date(movie.created_at).toLocaleString()}</div>
-              {source === 'movie' && isOwner && (
-                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                  <button onClick={goEdit}>Edit</button>
-                  <button
-                    onClick={deleteMovie}
-                    disabled={updating}
-                    style={{ background: '#dc3545', color: 'white', padding: '6px 10px' }}
-                  >
-                    {updating ? 'Deleting…' : 'Delete'}
+          <div className="collapse d-md-flex" id="movieHeaderActions">
+            <div className="header-actions d-flex align-items-center gap-2">
+              <button className="btn btn-outline-secondary" onClick={() => navigate('/')}>Browse</button>
+              <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add' : 'Log in to Add'}</button>
+
+              {isLoggedIn() && (
+                <div className="dropdown ms-2">
+                  <button className="btn btn-light border dropdown-toggle" id="accountMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                    Account
                   </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="accountMenu">
+                    <li><button className="dropdown-item" onClick={() => navigate('/profile')}>Profile</button></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
+                  </ul>
                 </div>
               )}
-
             </div>
           </div>
-
-          <div style={{ marginTop: 12 }}>
-            <strong>Status:</strong> {movie.status}
-          </div>
-
-          {/* ADMIN add control: ALWAYS rendered for admin items (regardless of media_type) */}
-          {source === 'admin' && (
-            <div style={{ marginTop: 12 }}>
-              {adminAdded ? (
-                <span aria-hidden title="Already added" style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '8px 12px',
-                  borderRadius: 6,
-                  background: '#28a745',
-                  color: '#fff',
-                  fontWeight: 700
-                }}>
-                  ✓ Added
-                </span>
-              ) : (
-                <button
-                  onClick={() => {
-                    if (!tokenPresent()) {
-                      navigate('/login');
-                      return;
-                    }
-                    addToMyShowsFromAdmin();
-                  }}
-                  disabled={updating}
-                  style={{ padding: '8px 12px' }}
-                >
-                  {updating ? 'Adding…' : 'Add to My Shows'}
-                </button>
-              )}
-            </div>
-          )}
-
-          {isTV && (
-            <div style={{ marginTop: 20 }}>
-              <strong>Progress</strong>
-              <div style={{ fontSize: 13, color: '#666' }}>{watched}/{total} episodes — {percent}%</div>
-
-              <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
-                <button onClick={decrement} disabled={updating || watched <= 0 || !editable}>−</button>
-
-                <input
-                  type="number"
-                  value={localEpisodes}
-                  min={0}
-                  max={total}
-                  disabled={updating || !editable}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '') setLocalEpisodes('');
-                    else setLocalEpisodes(Number(val));
-                  }}
-                  style={{ width: 70, padding: 6, textAlign: 'center' }}
-                />
-
-                <button onClick={increment} disabled={updating || watched >= total || !editable}>+</button>
-
-                <button
-                  onClick={() => updateProgress(localEpisodes === '' ? 0 : Number(localEpisodes), { markCompletedIfFull: true })}
-                  disabled={updating || !editable}
-                >
-                  Update
-                </button>
-              </div>
-
-              <div style={{ marginTop: 10, height: 12, background: '#eee', borderRadius: 6, overflow: 'hidden' }}>
-                <div style={{
-                  height: '100%',
-                  width: `${percent}%`,
-                  background: percent === 100 ? '#16a34a' : '#3b82f6',
-                  transition: 'width 200ms'
-                }} />
-              </div>
-
-              <button
-                style={{ marginTop: 10 }}
-                onClick={() => updateProgress(total, { markCompletedIfFull: true })}
-                disabled={updating || watched >= total || !editable}
-              >
-                Mark as Completed
-              </button>
-            </div>
-          )}
-
-          <div style={{ marginTop: 20, borderTop: '1px solid #ddd', paddingTop: 12 }}>
-            <h4>Rating & Review</h4>
-
-            {source === 'movie' ? (
-              <>
-                <div>
-                  <label>Rating (1–10): </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={10}
-                    value={rating}
-                    disabled={updating || !editable}
-                    onChange={(e) => setRating(e.target.value)}
-                    style={{ width: 70, padding: 6 }}
-                  />
-                </div>
-
-                <div style={{ marginTop: 10 }}>
-                  <label>Review:</label>
-                  <textarea
-                    rows={4}
-                    style={{ width: '100%', padding: 8 }}
-                    disabled={updating || !editable}
-                    value={review}
-                    onChange={(e) => setReview(e.target.value)}
-                  />
-                </div>
-
-                <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <button onClick={saveRatingReview} disabled={updating || !editable}>Save Review</button>
-                  <button onClick={generateReview} disabled={generating || updating || !editable}>Generate Review</button>
-                  {(generating || updating) && <span style={{ marginLeft: 12, color: '#666' }}>{generating ? 'Generating...' : 'Saving...'}</span>}
-                </div>
-
-                {movie.rating != null && <div style={{ marginTop: 8, color: '#333' }}>Current rating: {movie.rating} / 10</div>}
-                {movie.review && <div style={{ marginTop: 6, color: '#555' }}>Saved review: {movie.review}</div>}
-              </>
-            ) : (
-              <div style={{ color: '#666' }}>
-                Add this catalog item to your collection to rate and review it.
-              </div>
-            )}
-          </div>
-
         </div>
       </div>
+      {/* ---------- End Header ---------- */}
 
-      {error && <div style={{ marginTop: 12, color: 'red' }}>Error: {JSON.stringify(error)}</div>}
+      <div className="card shadow-sm">
+        <div className="card-body p-3 p-md-4">
+          <div className="row g-3">
+            {/* Poster / Avatar */}
+            <div className="col-12 col-md-4 d-flex justify-content-center">
+              <div className="poster-wrap w-100">
+                {movie.poster_url ? (
+                  <img src={movie.poster_url} alt={movie.title} className="poster img-fluid rounded" />
+                ) : (
+                  <div className="poster poster-initials d-flex align-items-center justify-content-center rounded">
+                    <span className="initials">{initials}</span>
+                  </div>
+                )}
+                <div className="meta-badges d-flex gap-2 mt-2 justify-content-center">
+                  <span className="badge bg-primary">{movie.media_type?.toUpperCase() || 'MOV'}</span>
+                  {movie.year && <span className="badge bg-secondary">{movie.year}</span>}
+                  {movie.platform && <span className="badge bg-light text-dark">{movie.platform}</span>}
+                </div>
+              </div>
+            </div>
+
+            {/* Details */}
+            <div className="col-12 col-md-8">
+              <div className="d-flex align-items-start justify-content-between">
+                <div className="me-3">
+                  <h2 className="mb-1 movie-title">{movie.title}</h2>
+                  <div className="text-muted small mb-2">{movie.genre || '—'} • {movie.language || '—'}</div>
+
+                  <div className="d-flex flex-wrap gap-2 align-items-center">
+                    <div className="fw-semibold">Status:</div>
+                    <div className="text-muted">{movie.status || '—'}</div>
+                    {movie.rating != null && (
+                      <div className="ms-3 d-flex align-items-center">
+                        <i className="bi bi-star-fill text-warning me-1"></i>
+                        <span className="fw-bold">{movie.rating}/10</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-3 text-muted small">
+                    <i className="bi bi-clock-history me-1"></i>
+                    Added: {new Date(movie.created_at).toLocaleString()}
+                  </div>
+                </div>
+
+                <div className="action-area text-end">
+                  {source === 'movie' && isOwner ? (
+                    <div className="d-flex flex-column align-items-end gap-2">
+                      <div className="d-flex gap-2">
+                        <button className="btn btn-outline-secondary btn-sm" onClick={goEdit}>Edit</button>
+                        <button className="btn btn-danger btn-sm" onClick={deleteMovie} disabled={updating}>
+                          {updating ? 'Deleting…' : 'Delete'}
+                        </button>
+                      </div>
+                      <div className="mt-2">
+                        <span className="badge bg-success">Owned</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="d-flex flex-column align-items-end gap-2">
+                      {source === 'admin' && (
+                        adminAdded ? (
+                          <span className="btn btn-success btn-sm disabled"><i className="bi bi-check-lg me-1"></i>Added</span>
+                        ) : (
+                          <button className="btn btn-primary btn-sm" onClick={() => {
+                            if (!tokenPresent()) {
+                              navigate('/login');
+                              return;
+                            }
+                            addToMyShowsFromAdmin();
+                          }} disabled={updating}>
+                            {updating ? 'Adding…' : <><i className="bi bi-plus-lg me-1"></i>Add to My Shows</>}
+                          </button>
+                        )
+                      )}
+                      <div className="mt-2">
+                        <span className="badge bg-info text-dark">{source === 'admin' ? 'Catalog' : '—'}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {movie.synopsis && (
+                <p className="mt-3 synopsis text-muted">{movie.synopsis}</p>
+              )}
+
+              {isTV && (
+                <div className="mt-3 card card-body p-3 progress-card">
+                  <div className="d-flex justify-content-between align-items-center">
+                    <div>
+                      <div className="fw-semibold">Progress</div>
+                      <div className="small text-muted">{watched}/{total} episodes • {percent}%</div>
+                    </div>
+
+                    <div className="d-flex gap-2 align-items-center">
+                      <div className="input-group input-group-sm" style={{ width: 140 }}>
+                        <button className="btn btn-outline-secondary" onClick={decrement} disabled={updating || watched <= 0 || !editable}>−</button>
+                        <input
+                          type="number"
+                          className="form-control text-center"
+                          value={localEpisodes}
+                          min={0}
+                          max={total}
+                          disabled={updating || !editable}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === '') setLocalEpisodes('');
+                            else setLocalEpisodes(Number(val));
+                          }}
+                        />
+                        <button className="btn btn-outline-secondary" onClick={increment} disabled={updating || watched >= total || !editable}>+</button>
+                      </div>
+
+                      <button className="btn btn-sm btn-outline-primary" onClick={() => updateProgress(localEpisodes === '' ? 0 : Number(localEpisodes), { markCompletedIfFull: true })} disabled={updating || !editable}>
+                        Update
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-3">
+                    <div className="progress" style={{ height: 10 }}>
+                      <div className={`progress-bar ${percent === 100 ? 'bg-success' : ''}`} role="progressbar" style={{ width: `${percent}%` }} aria-valuenow={percent} aria-valuemin="0" aria-valuemax="100" />
+                    </div>
+
+                    <div className="mt-2 d-flex justify-content-between">
+                      <small className="text-muted">Episodes: {watched}/{total}</small>
+                      <button className="btn btn-sm btn-success" onClick={() => updateProgress(total, { markCompletedIfFull: true })} disabled={updating || watched >= total || !editable}>
+                        Mark as Completed
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 card card-body p-3 review-card">
+                <div className="d-flex justify-content-between align-items-start">
+                  <h5 className="mb-0">Rating & Review</h5>
+                  <div className="small text-muted">You can save a rating and a short review</div>
+                </div>
+
+                {source === 'movie' ? (
+                  <div className="mt-3">
+                    <div className="row g-2 align-items-center">
+                      <div className="col-auto">
+                        <label className="form-label mb-0 small">Rating</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          min={1}
+                          max={10}
+                          value={rating}
+                          disabled={updating || !editable}
+                          onChange={(e) => setRating(e.target.value)}
+                          style={{ width: 100 }}
+                        />
+                      </div>
+
+                      <div className="col">
+                        <label className="form-label mb-0 small">Review</label>
+                        <textarea
+                          className="form-control"
+                          rows={3}
+                          value={review}
+                          disabled={updating || !editable}
+                          onChange={(e) => setReview(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-3 d-flex gap-2 align-items-center">
+                      <button className="btn btn-primary btn-sm" onClick={saveRatingReview} disabled={updating || !editable}>
+                        {updating ? 'Saving…' : 'Save Review'}
+                      </button>
+                      <button className="btn btn-outline-secondary btn-sm" onClick={generateReview} disabled={generating || updating || !editable}>
+                        {generating ? 'Generating…' : 'Generate Review'}
+                      </button>
+                      {(generating || updating) && <small className="text-muted ms-2">{generating ? 'Generating...' : 'Saving...'}</small>}
+                    </div>
+
+                    {movie.rating != null && <div className="mt-2"><small className="text-muted">Current rating: <span className="fw-bold ms-1">{movie.rating} / 10</span></small></div>}
+                    {movie.review && <div className="mt-2"><small className="text-muted">Saved review:</small><div className="mt-1">{movie.review}</div></div>}
+                  </div>
+                ) : (
+                  <div className="mt-3 text-muted">
+                    Add this catalog item to your collection to rate and review it.
+                  </div>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+          {error && <div className="mt-3 text-danger">Error: {JSON.stringify(error)}</div>}
+        </div>
+      </div>
     </div>
   );
 };

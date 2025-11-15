@@ -1,0 +1,98 @@
+.movie-detail .card {
+  border: none;
+  overflow: visible;
+}
+
+.poster-wrap {
+  max-width: 260px;
+  width: 100%;
+}
+
+.poster {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(20,20,30,0.06);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* placeholder initials */
+.poster-initials {
+  height: 320px;
+  background: linear-gradient(135deg, #eef2ff 0%, #f0fdf4 100%);
+  border: 1px solid rgba(0,0,0,0.04);
+}
+.poster-initials .initials {
+  font-size: 48px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 1px;
+}
+
+/* meta badges under poster */
+.meta-badges .badge {
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.45rem 0.6rem;
+}
+
+/* Title and small tweaks */
+.movie-title {
+  font-size: 1.45rem;
+  letter-spacing: -0.2px;
+  margin-bottom: 0;
+}
+
+.synopsis {
+  color: #495057;
+  line-height: 1.4;
+  margin-top: 0.6rem;
+}
+
+/* Cards inside the details area */
+.progress-card, .review-card {
+  border-radius: 10px;
+  border: 1px solid rgba(13,110,253,0.06);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfd 100%);
+  box-shadow: 0 6px 20px rgba(15,23,42,0.03);
+}
+
+/* small screens adjustments */
+@media (max-width: 767.98px) {
+  .poster-initials {
+    height: 260px;
+  }
+  .poster {
+    height: auto;
+  }
+  .action-area {
+    margin-top: 8px;
+  }
+  .meta-badges {
+    justify-content: center;
+  }
+}
+
+/* tiny niceties */
+.btn:disabled {
+  opacity: 0.85;
+}
+
+.movie-detail .badge.bg-light {
+  background: #f8f9fa !important;
+}
+
+/* subtle hover for cards */
+.movie-detail .card-body > .row > .col-md-8 .card:hover {
+  transform: translateY(-2px);
+  transition: transform 160ms ease;
+}
+
+/* make progress bar smooth */
+.progress .progress-bar {
+  transition: width 300ms ease;
+}
+
+/* small spacing helpers */
+.gap-2 { gap: 0.5rem; }
