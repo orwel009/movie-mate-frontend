@@ -165,13 +165,54 @@ const Home = () => {
   };
 
   // Empty state
-  if (!loading && catalog.length === 0) {
+  // Empty states
+  const noResults = !loading && catalog.length === 0;
+
+  if (noResults) {
+    const isSearching =
+      filters.search ||
+      filters.genre ||
+      filters.platform ||
+      filters.status ||
+      filters.ordering !== '-created_at';
+
+    // CASE 1: Search/filter empty result
+    if (isSearching) {
+      return (
+        <div className="home-empty d-flex flex-column align-items-center justify-content-center">
+          <h3 className="mb-2">No results found</h3>
+          <p classnName="text-muted mb-3">Try adjusting your filters or search terms.</p>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() =>
+              setFilters({
+                ...filters,
+                search: '',
+                genre: '',
+                platform: '',
+                status: '',
+                ordering: '-created_at',
+                page: 1,
+              })
+            }
+          >
+            Clear filters
+          </button>
+        </div>
+      );
+    }
+
+    // CASE 2: Entire catalog empty (no admin movies)
     return (
       <div className="home-empty d-flex flex-column align-items-center justify-content-center">
         <h2 className="mb-2">MovieMate is empty</h2>
         <p className="text-muted mb-3">Admins can add catalog items from the admin panel.</p>
+
         <div>
-          <button className="btn btn-outline-primary me-2" onClick={() => fetchCatalog()}>Refresh</button>
+          <button className="btn btn-outline-primary me-2" onClick={() => fetchCatalog()}>
+            Refresh
+          </button>
           <button className="btn btn-primary" onClick={handleCreate}>
             {isLoggedIn() ? 'Create my show' : 'Log in to create'}
           </button>
@@ -179,6 +220,7 @@ const Home = () => {
       </div>
     );
   }
+
 
   return (
     <div className="container home-container my-4">
