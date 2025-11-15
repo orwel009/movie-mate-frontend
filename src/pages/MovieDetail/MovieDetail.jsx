@@ -17,7 +17,6 @@ const MovieDetail = ({ routeSource = null }) => {
   const [localEpisodes, setLocalEpisodes] = useState('');
   const [rating, setRating] = useState('');
   const [review, setReview] = useState('');
-  const [generating, setGenerating] = useState(false);
 
   const [currentUserId, setCurrentUserId] = useState(null);
   const [source, setSource] = useState(null); // 'movie' or 'admin'
@@ -240,23 +239,6 @@ const MovieDetail = ({ routeSource = null }) => {
     }
   };
 
-  const generateReview = async () => {
-    if (!editable) {
-      alert('Add this show to generate a review.');
-      return;
-    }
-    setGenerating(true);
-    setError(null);
-    try {
-      const res = await api.post('generate-review/', { title: movie.title, notes: movie.review || '' });
-      setReview(res.data.review || '');
-    } catch (err) {
-      console.error(err);
-      setError(err.response?.data || err.message);
-    } finally {
-      setGenerating(false);
-    }
-  };
 
   // Add admin item to user's shows (optimistic)
   const addToMyShowsFromAdmin = async () => {
@@ -588,10 +570,6 @@ const MovieDetail = ({ routeSource = null }) => {
                       <button className="btn btn-primary btn-sm" onClick={saveRatingReview} disabled={updating || !editable}>
                         {updating ? 'Saving…' : 'Save Review'}
                       </button>
-                      <button className="btn btn-outline-secondary btn-sm" onClick={generateReview} disabled={generating || updating || !editable}>
-                        {generating ? 'Generating…' : 'Generate Review'}
-                      </button>
-                      {(generating || updating) && <small className="text-muted ms-2">{generating ? 'Generating...' : 'Saving...'}</small>}
                     </div>
 
                     {movie.rating != null && <div className="mt-2"><small className="text-muted">Current rating: <span className="fw-bold ms-1">{movie.rating} / 10</span></small></div>}
