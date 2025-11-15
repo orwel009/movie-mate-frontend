@@ -89,6 +89,13 @@ const AddedMovies = () => {
     }
     navigate('/add');
   };
+    const goToBrowse = () => {
+    if (!isLoggedIn()) {
+      navigate('/login');
+      return;
+    }
+    navigate('/');
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('access_token');
@@ -139,7 +146,7 @@ const AddedMovies = () => {
           <p className="text-muted mb-3">Add movies or shows to your collection — they'll appear here.</p>
           <div className="d-flex gap-2 justify-content-center">
             <button className="btn btn-outline-primary" onClick={() => fetchMovies()}>Refresh</button>
-            <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add Movie / Show' : 'Log in to Add'}</button>
+            <button className="btn btn-primary" onClick={goToBrowse}>{isLoggedIn() ? 'Browse Movie / Show' : 'Log in to Add'}</button>
           </div>
         </div>
       </div>
