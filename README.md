@@ -1,70 +1,130 @@
-# Getting Started with Create React App
+# **MovieMate — Frontend (React)**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is the **React frontend** for **MovieMate**, an application for tracking movies and TV shows.  
+It includes authentication, listing, filtering, progress tracking, rating, reviews, and interacts with a Django REST API backend.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## **Features**
+- User authentication (login and signup)
+- List all movies and TV shows
+- Search and filter by genre, platform, and status
+- Add new movie or TV show
+- Create custom movie or TV show
+- Edit movie/show details
+- Track TV show progress (episodes watched)
+- Add rating and review
+- Delete entries
+- API integration using Axios
 
-### `npm start`
+---
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## **Tech Stack**
+- React (Create React App)
+- React Router
+- Axios
+- CSS / Bootstrap
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+---
 
-### `npm test`
+## **Setup Instructions**
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### **1. Clone the repository**
+```bash
+git clone https://github.com/orwel009/movie-mate-frontend.git
+cd movie-mate-frontend
+```
 
-### `npm run build`
+### **2. Install dependencies**
+```bash
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### **3. Create `.env` file**
+Create a file named `.env` in the root of the frontend:
+```bash
+REACT_APP_API_BASE=http://localhost:8000
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### **4. Start the development server**
+```bash
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Runs at:
+```
+http://localhost:3000
+```
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## **Project Structure**
+```
+src/
+  api.js
+  pages/
+    Auth/
+      Login.jsx
+      Signup.jsx
+    Home/Home.jsx
+    Add/Add.jsx
+    Edit/Edit.jsx
+    MovieDetail/MovieDetail.js
+    AddedMovie/AddedMovie.jsx
+    Profile/Profile.jsx
+  components/
+    MovieCard/MovieCard.js
+    FilterBar/FilterBar.jsx
+    Pagination/Pagination.jsx
+    Footer/Footer.jsx
+    ProtectedRoute.js
+  App.js
+  index.js
+```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+---
 
-## Learn More
+## **Admin Seeding Script (Backend Requirement)**
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+This frontend **requires the MovieMate Backend** to be running.  
+Clone the backend repository and follow its setup steps before running this frontend:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+git clone https://github.com/orwel009/moviematebackend.git
+cd moviematebackend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_admin_movies
+python manage.py runserver
+```
 
-### Code Splitting
+### **Admin Seeding Script**
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+The backend includes the following script:
 
-### Analyzing the Bundle Size
+```
+seed_admin_movies.py
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Running this script will insert **100 movies/TV shows** into the database.  
+This avoids relying on TMDB (often restricted in India) or OMDB (paid).
 
-### Making a Progressive Web App
+Once the backend is seeded and running,  
+the frontend will automatically fetch and display these entries.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+---
 
-### Advanced Configuration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## **Build for Production**
+```bash
+npm run build
+```
 
-### Deployment
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## **Author**
+**ORWEL P V**
