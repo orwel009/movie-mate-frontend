@@ -16,10 +16,12 @@ function App() {
         <Route path="/" element={<Home/>} />
         <Route path="/signup" element={<Signup/>} />
         <Route path="/login" element={<Login/>} />
+        <Route path="/catalog/:id" element={<MovieDetail routeSource="admin" />} />
         <Route path="/my-shows" element={<ProtectedRoute><AddedMovies/></ProtectedRoute>} />
         <Route path="/add" element={<ProtectedRoute><Add/></ProtectedRoute>} />
-        <Route path="/movie/:id" element={<ProtectedRoute><MovieDetail/></ProtectedRoute>} />
+        <Route path="/movie/:id" element={<ProtectedRoute><MovieDetail routeSource="movie"/></ProtectedRoute>} />
         <Route path="/edit/:id" element={<ProtectedRoute><Edit/></ProtectedRoute>} />
+        <Route path="*" element={<div><h1>Not Found</h1></div>} />
       </Routes>
     </BrowserRouter>
   );
