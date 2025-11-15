@@ -25,14 +25,9 @@ const StatusBadge = ({ status }) => {
 };
 
 const Star = ({ filled = false, half = false }) => {
-  // simple SVG star — filled or outlined; half shows a filled clip
   const fillColor = '#f59e0b';
   const outline = '#f59e0b';
-  const base = (
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden focusable="false">
-      <path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.52L19.334 24 12 19.897 4.666 24l1.5-8.73L.5 9.75l7.832-1.732z" />
-    </svg>
-  );
+
   if (half) {
     return (
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden focusable="false" style={{marginRight:2}}>
