@@ -4,12 +4,21 @@ import MovieCard from '../../components/MovieCard/MovieCard';
 import FilterBar from '../../components/FilterBar/FilterBar';
 import Pagination from '../../components/Pagination/Pagination';
 import { useNavigate } from 'react-router-dom';
+import './AddedMovies.css';
 
 const AddedMovies = () => {
   const [movies, setMovies] = useState([]);
   const [meta, setMeta] = useState({ count: 0, page_size: 12, page: 1 });
   const [loading, setLoading] = useState(false);
-  const [filters, setFilters] = useState({ search: '', genre: '', platform: '', status: '', ordering: '-created_at', page: 1, page_size: 12 });
+  const [filters, setFilters] = useState({
+    search: '',
+    genre: '',
+    platform: '',
+    status: '',
+    ordering: '-created_at',
+    page: 1,
+    page_size: 12
+  });
   const [genres, setGenres] = useState([]);
   const [platforms, setPlatforms] = useState([]);
   const navigate = useNavigate();
@@ -29,7 +38,6 @@ const AddedMovies = () => {
   }, []);
 
   const fetchMovies = useCallback(async () => {
-    // If user not logged in, show empty list (avoid calling API)
     if (!isLoggedIn()) {
       setMovies([]);
       setMeta({ count: 0, page_size: filters.page_size, page: filters.page });
@@ -52,10 +60,13 @@ const AddedMovies = () => {
       const data = res.data;
       const list = data.results ?? data;
       setMovies(list);
-      setMeta({ count: data.count ?? list.length, page_size: data.page_size ?? filters.page_size, page: filters.page });
+      setMeta({
+        count: data.count ?? list.length,
+        page_size: data.page_size ?? filters.page_size,
+        page: filters.page
+      });
     } catch (e) {
       console.error(e);
-      // If API returns 401/403, redirect to login
       if (e?.response?.status === 401) {
         localStorage.removeItem('access_token');
         delete api.defaults.headers.common['Authorization'];
@@ -79,45 +90,142 @@ const AddedMovies = () => {
     navigate('/add');
   };
 
-  // Empty-state: if no movies for this (logged-in) user
-  if (!loading && movies.length === 0 && meta.count === 0) {
+  const handleLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    delete api.defaults.headers.common['Authorization'];
+    navigate('/login');
+  };
+
+  // Determine if this is an empty result due to filters/search vs truly empty collection
+  const noResults = !loading && movies.length === 0;
+
+  if (noResults) {
+    const isFiltering =
+      filters.search ||
+      filters.genre ||
+      filters.platform ||
+      filters.status ||
+      filters.ordering !== '-created_at';
+
+    if (isFiltering) {
+      return (
+        <div className="page-empty container d-flex flex-column align-items-center justify-content-center">
+          <div className="empty-card p-4 text-center">
+            <h3 className="mb-2">No results</h3>
+            <p className="text-muted mb-3">No movies match your filters. Try clearing filters or searching again.</p>
+            <div className="d-flex gap-2 justify-content-center">
+              <button className="btn btn-outline-secondary" onClick={() => setFilters({
+                ...filters,
+                search: '',
+                genre: '',
+                platform: '',
+                status: '',
+                ordering: '-created_at',
+                page: 1
+              })}>Clear filters</button>
+              <button className="btn btn-primary" onClick={() => fetchMovies()}>Refresh</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // true empty state
     return (
-      <div style={{ height: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-        <h2>No movies yet</h2>
-        <p style={{ color: '#666' }}>You don't have any movies or shows added. Add your first item.</p>
-        <button onClick={goToAdd} style={{ marginTop: 12, padding: '10px 16px' }}>
-          {isLoggedIn() ? 'Add Movie / Show' : 'Log in to Add'}
-        </button>
+      <div className="page-empty container d-flex flex-column align-items-center justify-content-center">
+        <div className="empty-card p-4 text-center">
+          <h2 className="mb-2">You don't have any movies yet</h2>
+          <p className="text-muted mb-3">Add movies or shows to your collection — they'll appear here.</p>
+          <div className="d-flex gap-2 justify-content-center">
+            <button className="btn btn-outline-primary" onClick={() => fetchMovies()}>Refresh</button>
+            <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add Movie / Show' : 'Log in to Add'}</button>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ maxWidth: 980, margin: '20px auto', padding: 16 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>MovieMate — Browse</h1>
-        <button onClick={goToAdd} style={{ padding: '8px 12px' }}>
-          {isLoggedIn() ? 'Add' : 'Log in to Add'}
-        </button>
+    <div className="container addedmovies-container my-4">
+      {/* Header */}
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between mb-4">
+        <div className="d-flex align-items-center gap-3 mb-3 mb-md-0">
+          <div className="home-brand-logo" title="MovieMate">MM</div>
+          <div>
+            <h1 className="page-title mb-0">My Collection</h1>
+            <small className="text-muted">Movies & shows you've added</small>
+          </div>
+        </div>
+
+        <div className="d-flex align-items-center">
+          <button
+            className="btn btn-outline-secondary d-md-none me-2"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#addedHeaderActions"
+            aria-controls="addedHeaderActions"
+            aria-expanded="false"
+            aria-label="Toggle header actions"
+          >
+            Menu
+          </button>
+
+          <div className="collapse d-md-flex" id="addedHeaderActions">
+            <div className="header-actions d-flex align-items-center gap-2">
+              <button className="btn btn-outline-secondary" onClick={() => navigate('/')}>Browse</button>
+              <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add' : 'Log in to Add'}</button>
+
+              {isLoggedIn() && (
+                <div className="dropdown ms-2">
+                  <button className="btn btn-light border dropdown-toggle" id="accountMenu2" data-bs-toggle="dropdown" aria-expanded="false">
+                    Account
+                  </button>
+                  <ul className="dropdown-menu dropdown-menu-end" aria-labelledby="accountMenu2">
+                    <li><button className="dropdown-item" onClick={() => navigate('/profile')}>Profile</button></li>
+                    <li><hr className="dropdown-divider" /></li>
+                    <li><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <FilterBar filters={filters} setFilters={setFilters} genres={genres} platforms={platforms} />
+      {/* Filter bar */}
+      <div className="mb-3">
+        <FilterBar filters={filters} setFilters={setFilters} genres={genres} platforms={platforms} />
+      </div>
 
-      {loading ? <div>Loading...</div> : (
+      {/* Content */}
+      {loading ? (
+        <div className="text-center py-5">
+          <div className="spinner-border" role="status" aria-hidden="true"></div>
+          <div className="mt-2 text-muted">Loading your movies...</div>
+        </div>
+      ) : (
         <>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+          <div className="row g-4">
             {movies.map(m => (
-              <div
-                key={m.id}
-                onClick={() => navigate(`/movie/${m.id}`)}
-                style={{ cursor: 'pointer' }}
-              >
-                <MovieCard movie={m} />
+              <div key={m.id} className="col-xl-4 col-lg-4 col-md-6 col-sm-12">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => navigate(`/movie/${m.id}`)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/movie/${m.id}`); }}
+                  className="movie-card-equal movie-tile"
+                >
+                  <MovieCard movie={m} />
+                </div>
+
               </div>
             ))}
           </div>
 
-          <Pagination page={meta.page} pageSize={meta.page_size} count={meta.count} onPageChange={handlePageChange} />
+          <div className="d-flex justify-content-center mt-4">
+            <Pagination page={meta.page} pageSize={meta.page_size} count={meta.count} onPageChange={handlePageChange} />
+          </div>
         </>
       )}
     </div>

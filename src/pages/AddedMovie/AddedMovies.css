@@ -1,0 +1,95 @@
+/* container sizing */
+.addedmovies-container {
+  max-width: 1250px;
+}
+
+/* page title */
+.page-title {
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  font-size: 1.45rem;
+}
+
+/* brand logo (same as Home) */
+.home-brand-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: white;
+  background: linear-gradient(90deg, #0f62fe, #3b82f6);
+  box-shadow: 0 6px 18px rgba(15, 98, 254, 0.15);
+}
+
+/* empty state card */
+.page-empty {
+  min-height: 60vh;
+}
+
+.empty-card {
+  background: linear-gradient(180deg, #ffffff, #fbfdff);
+  border-radius: 12px;
+  box-shadow: 0 8px 26px rgba(12,20,40,0.06);
+  max-width: 720px;
+}
+
+/* grid card spacing / hover */
+.movie-tile {
+  cursor: pointer;
+  display: block;
+}
+
+.movie-tile:focus {
+  outline: none;
+  box-shadow: 0 0 0 6px rgba(15,98,254,0.06);
+  border-radius: 10px;
+}
+
+/* Make all MovieCards the same height*/
+.movie-card-equal {
+  height: 310px;
+  display: flex;
+  flex-direction: column;
+}
+
+.movie-card-equal > * {
+  flex-grow: 1;
+}
+
+
+/* small screens tweak */
+@media (max-width: 767.98px) {
+  .home-brand-logo { width:48px; height:48px; font-size:16px; }
+  .page-title { font-size: 1.15rem; }
+}
+
+/* header collapse panel styles (small screens) */
+#addedHeaderActions {
+  width: 100%;
+  margin-top: 8px;
+}
+
+#addedHeaderActions .header-actions {
+  padding: 10px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 767.98px) {
+  #addedHeaderActions.collapse:not(.show) { display: none; }
+  #addedHeaderActions.collapse.show {
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(12,20,40,0.06);
+    padding: 8px;
+  }
+
+  #addedHeaderActions .header-actions .btn {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  #addedHeaderActions .header-actions .dropdown { flex: 1 1 100%; }
+}
