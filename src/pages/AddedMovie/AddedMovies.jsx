@@ -1,4 +1,3 @@
-// src/pages/AddedMovies/AddedMovies.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../../api';
 import MovieCard from '../../components/MovieCard/MovieCard';
