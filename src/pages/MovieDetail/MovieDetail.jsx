@@ -323,6 +323,30 @@ const MovieDetail = ({ routeSource = null }) => {
     if (source === 'movie' && isOwner) navigate(`/edit/${movie.id}`);
     else alert('Only owner can edit this movie. Add it to your shows to create your own editable copy.');
   };
+  const deleteMovie = async () => {
+    if (!editable) {
+      alert("Only the owner can delete this item.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this item?")) return;
+
+    setUpdating(true);
+    setError(null);
+
+    try {
+      await api.delete(`movies/${movie.id}/`);
+      alert("Deleted successfully");
+      navigate('/my-shows');
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data || err.message);
+      alert("Failed to delete entry");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
 
   // render guards
   if (loading) return <div style={{ padding: 16 }}>Loading...</div>;
@@ -362,7 +386,19 @@ const MovieDetail = ({ routeSource = null }) => {
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 12, color: '#666' }}>{source === 'movie' ? 'Owned' : 'Catalog'}</div>
               <div style={{ fontSize: 13 }}>{new Date(movie.created_at).toLocaleString()}</div>
-              {source === 'movie' && isOwner && <div style={{ marginTop: 12 }}><button onClick={goEdit}>Edit</button></div>}
+              {source === 'movie' && isOwner && (
+                <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                  <button onClick={goEdit}>Edit</button>
+                  <button
+                    onClick={deleteMovie}
+                    disabled={updating}
+                    style={{ background: '#dc3545', color: 'white', padding: '6px 10px' }}
+                  >
+                    {updating ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              )}
+
             </div>
           </div>
 
@@ -375,14 +411,14 @@ const MovieDetail = ({ routeSource = null }) => {
             <div style={{ marginTop: 12 }}>
               {adminAdded ? (
                 <span aria-hidden title="Already added" style={{
-                  display:'inline-flex',
-                  alignItems:'center',
-                  justifyContent:'center',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   padding: '8px 12px',
                   borderRadius: 6,
-                  background:'#28a745',
-                  color:'#fff',
-                  fontWeight:700
+                  background: '#28a745',
+                  color: '#fff',
+                  fontWeight: 700
                 }}>
                   ✓ Added
                 </span>
