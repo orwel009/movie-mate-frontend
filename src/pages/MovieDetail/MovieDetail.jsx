@@ -375,7 +375,7 @@ const MovieDetail = ({ routeSource = null }) => {
 
           <div className="collapse d-md-flex" id="movieHeaderActions">
             <div className="header-actions d-flex align-items-center gap-2">
-              <button className="btn btn-outline-secondary" onClick={() => navigate('/')}>My Collection</button>
+              <button className="btn btn-outline-secondary" onClick={() => navigate('/my-shows')}>My Collection</button>
               <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add' : 'Log in to Add'}</button>
 
               {isLoggedIn() && (
@@ -577,7 +577,7 @@ const MovieDetail = ({ routeSource = null }) => {
                   </div>
                 ) : (
                   <div className="mt-3 text-muted">
-                    Go to my collection to rate and review it.
+                    Login to rate and review it.
                   </div>
                 )}
               </div>
