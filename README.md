@@ -43,7 +43,7 @@ npm install
 ### **3. Create `.env` file**
 Create a file named `.env` in the root of the frontend:
 ```bash
-REACT_APP_API_BASE=http://localhost:8000 or your backend url
+REACT_APP_API_BASE=http://localhost:8000
 ```
 
 ### **4. Start the development server**
