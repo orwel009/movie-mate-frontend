@@ -1,3 +1,4 @@
+// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import api from '../../api';
 import MovieCard from '../../components/MovieCard/MovieCard';
@@ -21,23 +22,31 @@ const Home = () => {
   });
   const [genres, setGenres] = useState([]);
   const [platforms, setPlatforms] = useState([]);
-  const [addedKeys, setAddedKeys] = useState(new Set()); // keys for items user already added
+
+  // addedMap maps a key (admin:id OR fallback title||platform) -> userMovieId (number)
+  // value === undefined => not added
+  // value === null => optimistic/queued added (we don't yet have the created userMovieId)
+  // value === number => the user-owned movie id to navigate to
+  const [addedMap, setAddedMap] = useState({});
+
   const navigate = useNavigate();
 
   const isLoggedIn = () => !!localStorage.getItem('access_token');
 
-  const makeKeyFromAdminItem = item => {
+  // Key builders (same logic as before)
+  const makeKeyFromAdminItem = (item) => {
     if (item?.admin_id) return `admin:${item.admin_id}`;
     if (item?.id) return `admin:${item.id}`;
     return `title:${(item.title || '').trim().toLowerCase()}||platform:${(item.platform || '').trim().toLowerCase()}`;
   };
-  const makeKeyFromUserMovie = movie => {
+  const makeKeyFromUserMovie = (movie) => {
     if (movie?.admin_movie_id) return `admin:${movie.admin_movie_id}`;
     if (movie?.source_admin_id) return `admin:${movie.source_admin_id}`;
     if (movie?.admin_id) return `admin:${movie.admin_id}`;
     return `title:${(movie.title || '').trim().toLowerCase()}||platform:${(movie.platform || '').trim().toLowerCase()}`;
   };
 
+  // Fetch facets from admin catalog (genres/platforms)
   const fetchFacets = useCallback(async () => {
     try {
       const res = await api.get('admin-movies/?page_size=1000');
@@ -49,17 +58,21 @@ const Home = () => {
     }
   }, []);
 
+  // Fetch user movies and build addedMap
   const fetchUserMovies = useCallback(async () => {
     if (!isLoggedIn()) {
-      setAddedKeys(new Set());
+      setAddedMap({});
       return;
     }
     try {
       const res = await api.get('movies/?page_size=1000');
       const list = res.data.results ?? res.data;
-      const keys = new Set();
-      list.forEach(m => keys.add(makeKeyFromUserMovie(m)));
-      setAddedKeys(keys);
+      const temp = {};
+      list.forEach(m => {
+        const key = makeKeyFromUserMovie(m);
+        if (key) temp[key] = Number(m.id);
+      });
+      setAddedMap(temp);
     } catch (e) {
       console.error('Failed to fetch user movies', e);
       if (e?.response?.status === 401) {
@@ -70,6 +83,7 @@ const Home = () => {
     }
   }, [navigate]);
 
+  // Fetch admin catalog with filters
   const fetchCatalog = useCallback(async () => {
     setLoading(true);
     try {
@@ -103,27 +117,56 @@ const Home = () => {
   useEffect(() => { fetchUserMovies(); }, [fetchUserMovies]);
   useEffect(() => { fetchCatalog(); }, [fetchCatalog]);
 
+  // Helper to check if an admin catalog item is added.
+  // Returns:
+  //   undefined => not added
+  //   null => added (optimistic) but no userMovieId yet
+  //   number => userMovieId (added)
+  const getAddedValue = (catalogItem) => {
+    const adminKey = makeKeyFromAdminItem(catalogItem);
+    const fallbackKey = `title:${(catalogItem.title || '').trim().toLowerCase()}||platform:${(catalogItem.platform || '').trim().toLowerCase()}`;
+
+    if (addedMap.hasOwnProperty(adminKey)) return addedMap[adminKey];
+    if (addedMap.hasOwnProperty(fallbackKey)) return addedMap[fallbackKey];
+    return undefined;
+  };
+
   const handleAddToMy = async (catalogItem) => {
     if (!isLoggedIn()) {
       navigate('/login');
       return;
     }
-    const itemKey = makeKeyFromAdminItem(catalogItem);
-    setAddedKeys(prev => new Set([...Array.from(prev), itemKey]));
+
+    const adminKey = makeKeyFromAdminItem(catalogItem);
+    const fallbackKey = `title:${(catalogItem.title || '').trim().toLowerCase()}||platform:${(catalogItem.platform || '').trim().toLowerCase()}`;
+
+    // Optimistic: mark as "added but pending" (null means awaiting created id)
+    setAddedMap(prev => ({ ...prev, [adminKey]: null, [fallbackKey]: null }));
 
     try {
       const res = await api.post(`movies/from-admin/${catalogItem.id}/`);
       const created = res.data;
       const userKey = makeKeyFromUserMovie(created);
-      setAddedKeys(prev => new Set([...Array.from(prev), userKey, itemKey]));
-      // TODO: replace alert with app toast
-      alert(`Added "${res.data.title}" to your collection`);
+      const userMovieId = Number(created.id);
+
+      // store both adminKey/fallback -> userMovieId and also userKey -> userMovieId (safe)
+      setAddedMap(prev => ({
+        ...prev,
+        [adminKey]: userMovieId,
+        [fallbackKey]: userMovieId,
+        [userKey]: userMovieId,
+      }));
+
+      // TODO: replace alert with toast
+      alert(`Added "${created.title}" to your collection`);
       navigate('/my-shows');
     } catch (err) {
       console.error(err);
-      setAddedKeys(prev => {
-        const copy = new Set(prev);
-        copy.delete(itemKey);
+      // Rollback optimistic entries
+      setAddedMap(prev => {
+        const copy = { ...prev };
+        delete copy[adminKey];
+        delete copy[fallbackKey];
         return copy;
       });
 
@@ -150,22 +193,15 @@ const Home = () => {
     setFilters(prev => ({ ...prev, page: p }));
   };
 
-  const isItemAdded = (catalogItem) => {
-    const adminKey = makeKeyFromAdminItem(catalogItem);
-    const fallbackKey = `title:${(catalogItem.title || '').trim().toLowerCase()}||platform:${(catalogItem.platform || '').trim().toLowerCase()}`;
-    return addedKeys.has(adminKey) || addedKeys.has(fallbackKey);
-  };
-
   const handleLogout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     delete api.defaults.headers.common['Authorization'];
-    setAddedKeys(new Set());
+    setAddedMap({});
     navigate('/login');
   };
 
   // Empty state
-  // Empty states
   const noResults = !loading && catalog.length === 0;
 
   if (noResults) {
@@ -176,12 +212,11 @@ const Home = () => {
       filters.status ||
       filters.ordering !== '-created_at';
 
-    // CASE 1: Search/filter empty result
     if (isSearching) {
       return (
         <div className="home-empty d-flex flex-column align-items-center justify-content-center">
           <h3 className="mb-2">No results found</h3>
-          <p classnName="text-muted mb-3">Try adjusting your filters or search terms.</p>
+          <p className="text-muted mb-3">Try adjusting your filters or search terms.</p>
 
           <button
             className="btn btn-outline-secondary"
@@ -203,7 +238,6 @@ const Home = () => {
       );
     }
 
-    // CASE 2: Entire catalog empty (no admin movies)
     return (
       <div className="home-empty d-flex flex-column align-items-center justify-content-center">
         <h2 className="mb-2">MovieMate is empty</h2>
@@ -221,7 +255,6 @@ const Home = () => {
     );
   }
 
-
   return (
     <div className="container home-container my-4">
       {/* === Responsive header === */}
@@ -235,9 +268,8 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Actions: small screens collapse, md+ show inline */}
+        {/* Actions */}
         <div className="d-flex align-items-center">
-          {/* Collapse toggler visible on small screens */}
           <button
             className="btn btn-outline-secondary d-md-none me-2"
             type="button"
@@ -250,13 +282,9 @@ const Home = () => {
             Menu
           </button>
 
-          {/* Collapsible actions container:
-              - on small screens it's a collapsed panel
-              - on md+ it's always visible via d-md-flex
-          */}
           <div className="collapse d-md-flex" id="homeHeaderActions">
             <div className="header-actions d-flex align-items-center gap-2">
-              <button className="btn btn-outline-secondary" onClick={() => navigate('/my-shows')}>My Shows</button>
+              <button className="btn btn-outline-secondary" onClick={() => navigate('/my-shows')}>My Collections</button>
               <button className="btn btn-primary" onClick={handleCreate}>
                 {isLoggedIn() ? 'Create custom show' : 'Log in to create'}
               </button>
@@ -303,7 +331,23 @@ const Home = () => {
         <>
           <div className="row g-4">
             {catalog.map(item => {
-              const added = isItemAdded(item);
+              const addedVal = getAddedValue(item); // undefined | null | number
+              const isAdded = addedVal !== undefined;
+
+              const onCardActivate = () => {
+                // If we have a user movie id, go straight to that page
+                if (typeof addedVal === 'number') {
+                  navigate(`/movie/${addedVal}`);
+                  return;
+                }
+                // If added but still waiting for created id (optimistic), go to My Shows
+                if (addedVal === null) {
+                  navigate('/my-shows');
+                  return;
+                }
+                // Not added: go to catalog detail
+                navigate(`/catalog/${item.id}`);
+              };
 
               return (
                 <div key={item.id} className="col-xl-4 col-lg-4 col-md-6 col-sm-12">
@@ -313,16 +357,23 @@ const Home = () => {
                       className="catalog-card-body"
                       role="button"
                       tabIndex={0}
-                      onClick={() => navigate(`/catalog/${item.id}`)}
-                      onKeyDown={(e) => { if (e.key === 'Enter') navigate(`/catalog/${item.id}`); }}
+                      onClick={onCardActivate}
+                      onKeyDown={(e) => { if (e.key === 'Enter') onCardActivate(); }}
                       aria-label={`Open ${item.title}`}
                     >
                       <MovieCard movie={item} />
                     </div>
 
                     <div className="catalog-card-actions mt-2 d-flex justify-content-end">
-                      {added ? (
-                        <button className="btn btn-success btn-sm" disabled>
+                      {isAdded ? (
+                        // If we have user-movie id -> go to that movie; if null (pending) -> go to my-shows
+                        <button
+                          className="btn btn-success btn-sm"
+                          onClick={() => {
+                            if (typeof addedVal === 'number') navigate(`/movie/${addedVal}`);
+                            else navigate('/my-shows');
+                          }}
+                        >
                           ✓ Added
                         </button>
                       ) : (
