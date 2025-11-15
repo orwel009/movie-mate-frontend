@@ -181,7 +181,7 @@ const AddedMovies = () => {
           <div className="collapse d-md-flex" id="addedHeaderActions">
             <div className="header-actions d-flex align-items-center gap-2">
               <button className="btn btn-outline-secondary" onClick={() => navigate('/')}>Browse</button>
-              <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Add' : 'Log in to Add'}</button>
+              <button className="btn btn-primary" onClick={goToAdd}>{isLoggedIn() ? 'Create custom show' : 'Log in to Add'}</button>
 
               {isLoggedIn() && (
                 <div className="dropdown ms-2">

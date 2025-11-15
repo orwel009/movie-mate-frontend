@@ -1,0 +1,45 @@
+.profile-card {
+  max-width: 600px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.profile-title {
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: #1e293b;
+}
+
+.profile-item {
+  margin-bottom: 1.2rem;
+}
+
+.profile-item label {
+  font-size: 0.85rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: block;
+}
+
+.profile-item .value {
+  font-size: 1.05rem;
+  color: #0f172a;
+  font-weight: 500;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(203, 213, 225, 0.6);
+}
+
+@media (max-width: 576px) {
+  .profile-card {
+    padding: 0.8rem;
+  }
+
+  .profile-item .value {
+    font-size: 1rem;
+  }
+}
