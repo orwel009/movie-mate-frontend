@@ -123,7 +123,8 @@ the frontend will automatically fetch and display these entries.
 ```bash
 npm run build
 ```
-
+---
+Live link : https://movie-mate-frontend-wine.vercel.app/
 ---
 
 ## **Author**
