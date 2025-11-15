@@ -8,6 +8,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Edit from "./pages/Edit/Edit";
 import MovieDetail from "./pages/MovieDetail/MovieDetail";
 import AddedMovies from "./pages/AddedMovie/AddedMovies";
+import Footer from "./components/Footer/Footer";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/edit/:id" element={<ProtectedRoute><Edit/></ProtectedRoute>} />
         <Route path="*" element={<div><h1>Not Found</h1></div>} />
       </Routes>
+      <Footer />
     </BrowserRouter>
   );
 }
