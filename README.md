@@ -86,6 +86,39 @@ src/
 
 ---
 
+## **Admin Seeding Script (Backend Requirement)**
+
+This frontend **requires the MovieMate Backend** to be running.  
+Clone the backend repository and follow its setup steps before running this frontend:
+
+```bash
+git clone https://github.com/orwel009/moviematebackend.git
+cd moviematebackend
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py seed_admin_movies
+python manage.py runserver
+```
+
+### **Admin Seeding Script**
+
+The backend includes the following script:
+
+```
+seed_admin_movies.py
+```
+
+Running this script will insert **100 movies/TV shows** into the database.  
+This avoids relying on TMDB (often restricted in India) or OMDB (paid).
+
+Once the backend is seeded and running,  
+the frontend will automatically fetch and display these entries.
+
+---
+
+
 ## **Build for Production**
 ```bash
 npm run build
